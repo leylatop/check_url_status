@@ -1,0 +1,3 @@
+https://example.com/script.js
+https://example.com/style.css
+https://example.com/index.html
