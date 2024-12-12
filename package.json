@@ -1,0 +1,11 @@
+{
+  "name": "check-urls-cli",
+  "version": "0.0.1",
+  "description": "检查URL状态的命令行工具",
+  "bin": {
+    "check-urls": "./check_urls.sh"
+  },
+  "scripts": {
+    "postinstall": "sudo ./install.sh"
+  }
+} 

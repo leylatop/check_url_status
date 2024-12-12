@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# 修改输出目录为运行脚本的目录
+OUTPUT_DIR=$(dirname "$0")
+
 # 检查并创建输出目录
 init_output_dirs() {
-  if [ ! -d "output" ]; then
-    mkdir output
+  if [ ! -d "$OUTPUT_DIR" ]; then
+    sudo mkdir -p "$OUTPUT_DIR"
+    sudo chmod 777 "$OUTPUT_DIR"
   fi
 }
 
@@ -18,11 +22,11 @@ check_url() {
 
   if [ "$http_code" = "200" ]; then
     echo -e "\033[32m[成功]\033[0m $url - HTTP状态码: $http_code"
-    echo "[$timestamp] $url - HTTP状态码: $http_code" >>output/success.log
+    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/success.log"
     return 0
   else
     echo -e "\033[31m[失败]\033[0m $url - HTTP状态码: $http_code"
-    echo "[$timestamp] $url - HTTP状态码: $http_code" >>output/error.log
+    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/error.log"
     return 1
   fi
 }
@@ -51,8 +55,8 @@ main() {
   local failed=0
 
   # 清空之前的日志文件
-  true >output/success.log
-  true >output/error.log
+  true >"$OUTPUT_DIR/success.log"
+  true >"$OUTPUT_DIR/error.log"
 
 
   # 读取文件中的每个URL并检查
@@ -79,8 +83,8 @@ main() {
   echo "总计: $total"
   echo -e "\033[32m成功: $success\033[0m"
   echo -e "\033[31m失败: $failed\033[0m"
-  echo "成功记录已保存到: output/success.log"
-  echo "失败记录已保存到: output/error.log"
+  echo "成功记录已保存到: $OUTPUT_DIR/success.log"
+  echo "失败记录已保存到: $OUTPUT_DIR/error.log"
 }
 
 # 运行主程序
