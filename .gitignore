@@ -1,0 +1,2 @@
+# 忽略output目录,以及output开头的文件夹
+output*
