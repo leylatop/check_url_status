@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 修改输出目录为运行脚本的目录
-OUTPUT_DIR=$(dirname "$0")
+# 修改输出目录为运行脚本的目录下的output-YYYYMMDDHHMMSS
+OUTPUT_DIR=$(dirname "$0")/output-$(date +%Y%m%d%H%M%S)
 
 # 检查并创建输出目录
 init_output_dirs() {
@@ -20,14 +20,18 @@ check_url() {
   http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
   timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-  if [ "$http_code" = "200" ]; then
-    echo -e "\033[32m[成功]\033[0m $url - HTTP状态码: $http_code"
-    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/success.log"
+  if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+    echo -e "\033[32m[${http_code}]\033[0m $url"
+    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/$http_code.log"
     return 0
-  else
-    echo -e "\033[31m[失败]\033[0m $url - HTTP状态码: $http_code"
-    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/error.log"
+  elif [ "$http_code" -ge 300 ] && [ "$http_code" -lt 400 ]; then
+    echo -e "\033[33m[${http_code}]\033[0m $url"
+    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/$http_code.log"
     return 1
+  else
+    echo -e "\033[31m[${http_code}]\033[0m $url"
+    echo "[$timestamp] $url - HTTP状态码: $http_code" >>"$OUTPUT_DIR/$http_code.log"
+    return 2
   fi
 }
 
@@ -51,13 +55,6 @@ main() {
 
   # 计数器
   local total=0
-  local success=0
-  local failed=0
-
-  # 清空之前的日志文件
-  true >"$OUTPUT_DIR/success.log"
-  true >"$OUTPUT_DIR/error.log"
-
 
   # 读取文件中的每个URL并检查
   echo "开始检查URL..."
@@ -70,21 +67,12 @@ main() {
     ((total++))
     check_url "$url"
 
-    if [ $? -eq 0 ]; then
-      ((success++))
-    else
-      ((failed++))
-    fi
   done <"$1"
 
   # 输出统计信息
   echo "------------------------"
   echo "检查完成!"
   echo "总计: $total"
-  echo -e "\033[32m成功: $success\033[0m"
-  echo -e "\033[31m失败: $failed\033[0m"
-  echo "成功记录已保存到: $OUTPUT_DIR/success.log"
-  echo "失败记录已保存到: $OUTPUT_DIR/error.log"
 }
 
 # 运行主程序
